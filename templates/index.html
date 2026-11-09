@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="heading"><div><h1>Cleanup dashboard</h1><p class="muted">Manage file retention policies and scheduled cleanup.</p></div>
+<div class="status"><span class="dot {% if settings.worker_enabled %}on{% else %}off{% endif %}"></span>{{ "Enabled" if settings.worker_enabled else "Stopped" }}</div></div>
+<div class="grid">
+<section class="panel">
+<h2>Retention policy</h2>
+<form method="post" action="{{ url_for('settings') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Target directories <span class="hint">One absolute path per line</span>
+<textarea name="target_paths" rows="5" placeholder="/srv/archive&#10;D:\\Shared\\Archive">{{ settings.target_paths|join('\n') }}</textarea></label>
+<div class="two">
+<label>Retention period (months)<input type="number" name="retention_months" min="1" max="120" value="{{ settings.retention_months }}" required></label>
+<label>Run interval (hours)<input type="number" name="interval_hours" min="1" max="720" value="{{ settings.interval_hours }}" required></label>
+</div>
+<label class="check"><input type="checkbox" name="dry_run" {% if settings.dry_run %}checked{% endif %}> Dry Run — preview only; do not delete files</label>
+<p class="warning">Uncheck Dry Run only when you are ready to permanently delete eligible files.</p>
+<button type="submit">Save settings</button>
+</form>
+</section>
+<section class="panel">
+<h2>Worker controls</h2><p class="muted">The worker runs as a separate operating-system service.</p>
+<div class="actions">
+<form method="post" action="{{ url_for('worker_control', action='start') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Start worker</button></form>
+<form method="post" action="{{ url_for('worker_control', action='stop') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary" type="submit">Stop worker</button></form>
+</div>
+<div class="metric"><span>Worker heartbeat</span><strong id="heartbeat">{{ state.heartbeat or "Not reported" }}</strong></div>
+<div class="metric"><span>Last cleanup</span><strong id="last-run">{{ state.last_run or "No runs yet" }}</strong></div>
+<div class="metric"><span>Last result</span><pre id="last-result">{{ state.last_result or "No result yet" }}</pre></div>
+<button class="secondary" id="preview-btn" type="button" data-csrf="{{ csrf_token() }}">Run dry-run preview now</button>
+</section>
+</div>
+<section class="panel">
+<div class="section-head"><div><h2>Deletion preview</h2><p class="muted">Files older than the configured retention cutoff.</p></div><span id="preview-summary" class="muted">No preview run yet</span></div>
+<div class="table-wrap"><table><thead><tr><th>File path</th><th>Last modified</th><th>Size</th></tr></thead><tbody id="preview-body"><tr><td colspan="3" class="muted">Run a preview to list eligible files.</td></tr></tbody></table></div>
+<p class="muted small" id="preview-note"></p>
+</section>
+<section class="panel">
+<div class="section-head"><div><h2>Activity log</h2><p class="muted">Latest 200 log lines · refreshes every 3 seconds.</p></div><span class="live">LIVE</span></div>
+<pre class="log" id="log-viewer">Loading logs…</pre>
+</section>
+<footer>Safety: directories and symbolic links are never deleted. Only regular files are eligible.</footer>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

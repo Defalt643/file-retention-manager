@@ -1,0 +1,38 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# SQLite databases & application data
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Log files & directories
+*.log
+logs/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
